@@ -45,13 +45,62 @@ func figure(figure int, x int, y int, w *[M][N][2]int) {
 
 // TODO: Read the world from file
 
+// Compute for all the world the next state of the cells
+func nextw(w *[M][N][2]int, t int) {
+
+	at := t % 2       // Actual time
+	nt := (t + 1) % 2 // Next time
+	for i := 0; i < M; i++ {
+		for j := 0; j < N; j++ {
+			w[i][j][nt] = neighbours(w, i, j, at)
+		}
+	}
+}
+
+// Compute the next state interacts with is neighbours
+func neighbours(w *[M][N][2]int, i int, j int, t int) int {
+	var nb int // number of neifhbours life
+
+	top := i - 1
+	bottom := i + 1
+	left := j - 1
+	right := j + 1
+	if top == -1 {
+		top = M - 1
+	}
+	if bottom == M {
+		bottom = 0
+	}
+	if left == -1 {
+		left = N - 1
+	}
+	if right == N {
+		right = 0
+	}
+	nb = w[top][left][t] + w[top][j][t] + w[top][right][t]
+	nb += w[i][left][t] + w[i][right][t]
+	nb += w[bottom][left][t] + w[bottom][j][t] + w[bottom][right][t]
+	//	fmt.Println(top, bottom, left, right)
+	//	fmt.Println(i, j, t, "nb:", nb, "w:", w[i][j][t])
+	if (nb == 2) && (w[i][j][t] == 1) {
+		return 1
+	}
+	if nb == 3 {
+		return 1
+	}
+	return 0
+}
+
+// TODO: The simulation stop when no changes occur
 func main() {
 	var world [M][N][2]int
 
-	figure(0, 0, 0, &world)
-	figure(1, 4, 4, &world)
+	//figure(0, 0, 0, &world)
+	//figure(1, 4, 4, &world)
+	figure(2, 0, 0, &world)
 	for t := 0; t < T_SIMUL; t++ {
 		fmt.Println("Time:", t)
+		nextw(&world, t)
 		printw(world, t%2)
 	}
 }
