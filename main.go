@@ -6,7 +6,7 @@ import "fmt"
 const (
 	M       = 10 // Rows
 	N       = 10 // Columns
-	T_SIMUL = 5
+	T_SIMUL = 100
 )
 
 func printw(w [M][N][2]int, t int) {
@@ -46,15 +46,20 @@ func figure(figure int, x int, y int, w *[M][N][2]int) {
 // TODO: Read the world from file
 
 // Compute for all the world the next state of the cells
-func nextw(w *[M][N][2]int, t int) {
+func nextw(w *[M][N][2]int, t int) bool {
 
+	static := true
 	at := t % 2       // Actual time
 	nt := (t + 1) % 2 // Next time
 	for i := 0; i < M; i++ {
 		for j := 0; j < N; j++ {
 			w[i][j][nt] = neighbours(w, i, j, at)
+			if static && (w[i][j][nt] != w[i][j][at]) {
+				static = false
+			}
 		}
 	}
+	return static
 }
 
 // Compute the next state interacts with is neighbours
@@ -80,8 +85,8 @@ func neighbours(w *[M][N][2]int, i int, j int, t int) int {
 	nb = w[top][left][t] + w[top][j][t] + w[top][right][t]
 	nb += w[i][left][t] + w[i][right][t]
 	nb += w[bottom][left][t] + w[bottom][j][t] + w[bottom][right][t]
-	//	fmt.Println(top, bottom, left, right)
-	//	fmt.Println(i, j, t, "nb:", nb, "w:", w[i][j][t])
+	//fmt.Println(top, bottom, left, right)
+	//fmt.Println(i, j, t, "nb:", nb, "w:", w[i][j][t])
 	if (nb == 2) && (w[i][j][t] == 1) {
 		return 1
 	}
@@ -91,16 +96,19 @@ func neighbours(w *[M][N][2]int, i int, j int, t int) int {
 	return 0
 }
 
-// TODO: The simulation stop when no changes occur
+// TODO: End simulation oscillators period=2?
 func main() {
 	var world [M][N][2]int
 
-	//figure(0, 0, 0, &world)
+	figure(0, 6, 2, &world)
 	//figure(1, 4, 4, &world)
 	figure(2, 0, 0, &world)
 	for t := 0; t < T_SIMUL; t++ {
 		fmt.Println("Time:", t)
-		nextw(&world, t)
 		printw(world, t%2)
+		if nextw(&world, t) {
+			fmt.Println("End simulation, the system is static.")
+			t = T_SIMUL
+		}
 	}
 }
