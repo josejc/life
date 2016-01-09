@@ -1,6 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
 
 // Constants in CAPITALS
 const (
@@ -43,7 +49,46 @@ func figure(figure int, x int, y int, w *[M][N][2]int) {
 	}
 }
 
-// TODO: Read the world from file
+func initw(f *os.File, w *[M][N][2]int) {
+	var r *strings.Reader
+	var b byte
+	var x, y int
+
+	input := bufio.NewScanner(f)
+	input.Scan()
+	if input.Text() != "#Life 1.05" {
+		fmt.Fprintf(os.Stderr, "ERROR: The file for initialization the world is not a valid .LIF format\n")
+	} else {
+		for input.Scan() {
+			r = strings.NewReader(input.Text())
+			b, _ = r.ReadByte()
+			// Only print patterns
+			if b != '#' {
+				fmt.Println(input.Text())
+			} else {
+				b, _ = r.ReadByte()
+				switch b {
+				case 'D':
+					{
+						fmt.Println("Description")
+					}
+				case 'N':
+					{
+						fmt.Println("Rules Conway R 23/3")
+					}
+				case 'P':
+					{
+						s := strings.Split(input.Text(), " ")
+						x, _ = strconv.Atoi(s[1])
+						y, _ = strconv.Atoi(s[2])
+						fmt.Println("Position ", x, " ", y)
+					}
+				}
+			}
+		}
+	}
+	// NOTE: ignoring potential errors from input.Err()
+}
 
 // Compute for all the world the next state of the cells
 func nextw(w *[M][N][2]int, t int) bool {
@@ -100,9 +145,23 @@ func neighbours(w *[M][N][2]int, i int, j int, t int) int {
 func main() {
 	var world [M][N][2]int
 
-	figure(0, 6, 2, &world)
-	//figure(1, 4, 4, &world)
-	figure(2, 0, 0, &world)
+	files := os.Args[1:]
+	if len(files) == 0 {
+		// World initialization
+		figure(0, 6, 2, &world)
+		//figure(1, 4, 4, &world)
+		figure(2, 0, 0, &world)
+	} else {
+		// Only open the first argument, one file
+		arg := files[0]
+		f, err := os.Open(arg)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		} else {
+			initw(f, &world)
+			f.Close()
+		}
+	}
 	for t := 0; t < T_SIMUL; t++ {
 		fmt.Println("Time:", t)
 		printw(world, t%2)

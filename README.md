@@ -34,4 +34,7 @@ More information:
 
 Bonda...
 
-For run: "$go run *.go"
+For run: "$go run *.go" //With predefined world in the code
+
+"$go build main.go"
+"$./main file.LIF"  // Read .LIF file with the pattern defined in file
