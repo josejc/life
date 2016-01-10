@@ -49,7 +49,7 @@ func figure(figure int, x int, y int, w *[M][N][2]int) {
 	}
 }
 
-func initw(f *os.File, w *[M][N][2]int) {
+func initw(f *os.File, w *[M][N][2]int) bool {
 	var r *strings.Reader
 	var b byte
 	var x, y int
@@ -58,6 +58,7 @@ func initw(f *os.File, w *[M][N][2]int) {
 	input.Scan()
 	if input.Text() != "#Life 1.05" {
 		fmt.Fprintf(os.Stderr, "ERROR: The file for initialization the world is not a valid .LIF format\n")
+		return false
 	} else {
 		for input.Scan() {
 			r = strings.NewReader(input.Text())
@@ -83,10 +84,16 @@ func initw(f *os.File, w *[M][N][2]int) {
 						y, _ = strconv.Atoi(s[2])
 						fmt.Println("Position ", x, " ", y)
 					}
+				case 'R':
+					{
+						fmt.Fprintf(os.Stderr, "ERROR: 'R' option not implemented\n")
+						return false
+					}
 				}
 			}
 		}
 	}
+	return true
 	// NOTE: ignoring potential errors from input.Err()
 }
 
@@ -145,6 +152,7 @@ func neighbours(w *[M][N][2]int, i int, j int, t int) int {
 func main() {
 	var world [M][N][2]int
 
+	run := true
 	files := os.Args[1:]
 	if len(files) == 0 {
 		// World initialization
@@ -157,17 +165,20 @@ func main() {
 		f, err := os.Open(arg)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+			run = false
 		} else {
-			initw(f, &world)
+			run = initw(f, &world)
 			f.Close()
 		}
 	}
-	for t := 0; t < T_SIMUL; t++ {
-		fmt.Println("Time:", t)
-		printw(world, t%2)
-		if nextw(&world, t) {
-			fmt.Println("End simulation, the system is static.")
-			t = T_SIMUL
+	if run {
+		for t := 0; t < T_SIMUL; t++ {
+			fmt.Println("Time:", t)
+			printw(world, t%2)
+			if nextw(&world, t) {
+				fmt.Println("End simulation, the system is static.")
+				t = T_SIMUL
+			}
 		}
 	}
 }
