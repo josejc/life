@@ -120,15 +120,20 @@ header:
 			}
 		} else {
 			for cells := int(r.Size()); cells > 0; cells-- {
-				if b == '.' || b == '*' {
-					if b == '.' {
+				switch b {
+				case '.':
+					{
 						w[x][y][0] = 0
-					} else {
+					}
+				case '*':
+					{
 						w[x][y][0] = 1
 					}
-				} else {
-					fmt.Fprintf(os.Stderr, "ERROR: Character not valid, only '.' or '*'\n")
-					return false
+				default:
+					{
+						fmt.Fprintf(os.Stderr, "ERROR: Character not valid, only '.' or '*'\n")
+						return false
+					}
 				}
 				b, _ = r.ReadByte()
 				y++
