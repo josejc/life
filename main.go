@@ -10,8 +10,8 @@ import (
 
 // Constants in CAPITALS
 const (
-	M       = 10 // Rows
-	N       = 10 // Columns
+	M       = 101 // Rows
+	N       = 101 // Columns
 	T_SIMUL = 100
 )
 
@@ -52,46 +52,90 @@ func figure(figure int, x int, y int, w *[M][N][2]int) {
 func initw(f *os.File, w *[M][N][2]int) bool {
 	var r *strings.Reader
 	var b byte
-	var x, y int
+	var x, y, oldy int
 
 	input := bufio.NewScanner(f)
 	input.Scan()
 	if input.Text() != "#Life 1.05" {
 		fmt.Fprintf(os.Stderr, "ERROR: The file for initialization the world is not a valid .LIF format\n")
 		return false
-	} else {
-		for input.Scan() {
-			r = strings.NewReader(input.Text())
+	}
+header:
+	// Read header of .LIF
+	for input.Scan() {
+		r = strings.NewReader(input.Text())
+		b, _ = r.ReadByte()
+		if b != '#' {
+			fmt.Println(input.Text())
+		} else {
 			b, _ = r.ReadByte()
-			// Only print patterns
-			if b != '#' {
-				fmt.Println(input.Text())
-			} else {
-				b, _ = r.ReadByte()
-				switch b {
-				case 'D':
-					{
-						fmt.Println("Description")
-					}
-				case 'N':
-					{
-						fmt.Println("Rules Conway R 23/3")
-					}
-				case 'P':
-					{
-						s := strings.Split(input.Text(), " ")
-						x, _ = strconv.Atoi(s[1])
-						y, _ = strconv.Atoi(s[2])
-						fmt.Println("Position ", x, " ", y)
-					}
-				case 'R':
-					{
-						fmt.Fprintf(os.Stderr, "ERROR: 'R' option not implemented\n")
-						return false
-					}
+			switch b {
+			case 'D':
+				{
+					fmt.Println("Description")
+				}
+			case 'N':
+				{
+					fmt.Println("Rules Conway R 23/3")
+				}
+			case 'R':
+				{
+					fmt.Fprintf(os.Stderr, "ERROR: 'R' option not implemented\n")
+					return false
+				}
+			case 'P':
+				{
+					s := strings.Split(input.Text(), " ")
+					x, _ = strconv.Atoi(s[1])
+					y, _ = strconv.Atoi(s[2])
+					x += (M / 2)
+					y += (N / 2)
+					oldy = y
+					break header // Exit loop, now only blocks of position and cells
+				}
+			default:
+				{
+					fmt.Fprintf(os.Stderr, "ERROR: Option in header not implemented\n")
+					return false
 				}
 			}
 		}
+	}
+	// Read patterns and positions
+	for input.Scan() {
+		r = strings.NewReader(input.Text())
+		b, _ = r.ReadByte()
+		if b == '#' {
+			b, _ = r.ReadByte()
+			if b == 'P' {
+				s := strings.Split(input.Text(), " ")
+				x, _ = strconv.Atoi(s[1])
+				y, _ = strconv.Atoi(s[2])
+				x += (M / 2)
+				y += (N / 2)
+				oldy = y
+			} else {
+				fmt.Fprintf(os.Stderr, "ERROR: Expected Position or blocks not config parameters\n")
+				return false
+			}
+		} else {
+			for cells := int(r.Size()); cells > 0; cells-- {
+				if b == '.' || b == '*' {
+					if b == '.' {
+						w[x][y][0] = 0
+					} else {
+						w[x][y][0] = 1
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "ERROR: Character not valid, only '.' or '*'\n")
+					return false
+				}
+				b, _ = r.ReadByte()
+				y++
+			}
+		}
+		x++
+		y = oldy
 	}
 	return true
 	// NOTE: ignoring potential errors from input.Err()
