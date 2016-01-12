@@ -12,10 +12,11 @@ import (
 const (
 	M       = 101 // Rows
 	N       = 101 // Columns
+	H       = 3   // History
 	T_SIMUL = 100
 )
 
-func printw(w [M][N][2]int, t int) {
+func printw(w [M][N][H]int, t int) {
 	for _, m := range w {
 		for j := 0; j < len(m); j++ {
 			//fmt.Print("[", i, ",", j, ":", m[j][t], "]")
@@ -29,7 +30,7 @@ func printw(w [M][N][2]int, t int) {
 // x,y is the corner on top left of the figure
 // TODO: Test the dimension of the figure in the world and the border cases
 // beware only put 'true' in the cells and not test the other
-func figure(figure int, x int, y int, w *[M][N][2]int) {
+func figure(figure int, x int, y int, w *[M][N][H]int) {
 	switch figure {
 	case 0: // Block
 		w[x][y][0] = 1
@@ -49,7 +50,7 @@ func figure(figure int, x int, y int, w *[M][N][2]int) {
 	}
 }
 
-func initw(f *os.File, w *[M][N][2]int) bool {
+func initw(f *os.File, w *[M][N][H]int) bool {
 	var r *strings.Reader
 	var b byte
 	var x, y, oldy int
@@ -146,12 +147,32 @@ header:
 	// NOTE: ignoring potential errors from input.Err()
 }
 
+// Compare t = t + 2 for know if the system is oscillator
+func oscilt2(w *[M][N][H]int, t int) bool {
+	oscil := true
+	if t < 2 {
+		return false
+	}
+	at := t % H       // Actual time
+	pt := (t - 2) % H // Past time
+loop:
+	for i := 0; i < M; i++ {
+		for j := 0; j < N; j++ {
+			if w[i][j][at] != w[i][j][pt] {
+				oscil = false
+				break loop
+			}
+		}
+	}
+	return oscil
+}
+
 // Compute for all the world the next state of the cells
-func nextw(w *[M][N][2]int, t int) bool {
+func nextw(w *[M][N][H]int, t int) bool {
 
 	static := true
-	at := t % 2       // Actual time
-	nt := (t + 1) % 2 // Next time
+	at := t % H       // Actual time
+	nt := (t + 1) % H // Next time
 	for i := 0; i < M; i++ {
 		for j := 0; j < N; j++ {
 			w[i][j][nt] = neighbours(w, i, j, at)
@@ -164,7 +185,7 @@ func nextw(w *[M][N][2]int, t int) bool {
 }
 
 // Compute the next state interacts with is neighbours
-func neighbours(w *[M][N][2]int, i int, j int, t int) int {
+func neighbours(w *[M][N][H]int, i int, j int, t int) int {
 	var nb int // number of neifhbours life
 
 	top := i - 1
@@ -197,17 +218,17 @@ func neighbours(w *[M][N][2]int, i int, j int, t int) int {
 	return 0
 }
 
-// TODO: End simulation oscillators period=2?
+// TODO: Documentation functions for use with godoc ;)
 func main() {
-	var world [M][N][2]int
+	var world [M][N][H]int
 
 	run := true
 	files := os.Args[1:]
 	if len(files) == 0 {
 		// World initialization
-		figure(0, 6, 2, &world)
-		//figure(1, 4, 4, &world)
-		figure(2, 0, 0, &world)
+		//figure(0, 6, 2, &world)
+		figure(1, 0, 0, &world)
+		//figure(2, 0, 0, &world)
 	} else {
 		// Only open the first argument, one file
 		arg := files[0]
@@ -223,7 +244,12 @@ func main() {
 	if run {
 		for t := 0; t < T_SIMUL; t++ {
 			fmt.Println("Time:", t)
-			printw(world, t%2)
+			printw(world, t%H)
+			// Check the world before calculate the next
+			if oscilt2(&world, t) {
+				fmt.Println("End simulation, the system is oscillator with period=2")
+				t = T_SIMUL
+			}
 			if nextw(&world, t) {
 				fmt.Println("End simulation, the system is static.")
 				t = T_SIMUL
