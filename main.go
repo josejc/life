@@ -1,3 +1,6 @@
+// Package MAIN for proves the functions to include in a next package
+// for implementation Cellular Automatas or Conway's Life
+// This version is sequential without the characteristics of concurrency
 package main
 
 import (
@@ -16,6 +19,7 @@ const (
 	T_SIMUL = 100
 )
 
+// printw print world -> array of [][]cells in time t
 func printw(w [M][N][H]int, t int) {
 	for _, m := range w {
 		for j := 0; j < len(m); j++ {
@@ -26,8 +30,12 @@ func printw(w [M][N][H]int, t int) {
 	}
 }
 
-// Initialization figures in the world
+// figure put patterns in the world
 // x,y is the corner on top left of the figure
+// the figure is defined:
+// 0 - block
+// 1 - blinker
+// 2 - slider
 // TODO: Test the dimension of the figure in the world and the border cases
 // beware only put 'true' in the cells and not test the other
 func figure(figure int, x int, y int, w *[M][N][H]int) {
@@ -50,6 +58,7 @@ func figure(figure int, x int, y int, w *[M][N][H]int) {
 	}
 }
 
+// initw read a file .LIF and configure the world with it
 func initw(f *os.File, w *[M][N][H]int) bool {
 	var r *strings.Reader
 	var b byte
@@ -147,7 +156,7 @@ header:
 	// NOTE: ignoring potential errors from input.Err()
 }
 
-// Compare t = t + 2 for know if the system is oscillator
+// oscilt2 compare Actual (t) = Past (t - 2) for know if the system is oscillator
 func oscilt2(w *[M][N][H]int, t int) bool {
 	oscil := true
 	if t < 2 {
@@ -167,7 +176,7 @@ loop:
 	return oscil
 }
 
-// Compute for all the world the next state of the cells
+// nextw compute for all the world the next state of the cells
 func nextw(w *[M][N][H]int, t int) bool {
 
 	static := true
@@ -184,7 +193,7 @@ func nextw(w *[M][N][H]int, t int) bool {
 	return static
 }
 
-// Compute the next state interacts with is neighbours
+// neighbours calculate the next state of the cells
 func neighbours(w *[M][N][H]int, i int, j int, t int) int {
 	var nb int // number of neifhbours life
 
@@ -218,7 +227,7 @@ func neighbours(w *[M][N][H]int, i int, j int, t int) int {
 	return 0
 }
 
-// TODO: Documentation functions for use with godoc ;)
+// main function for run and test the implementation of the functions
 func main() {
 	var world [M][N][H]int
 
