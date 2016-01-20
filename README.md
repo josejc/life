@@ -29,6 +29,16 @@ With this structure we have a spherical world ;) in 2d rectangular array of cell
 
 For evaluation in next time(tick) the world of cells have to [2], for iterate between and grow the simulation.
 
+## Graphic library? SDL, GL or another basic for create animation
+
+First, install the libraries ;) in the SDL case
+
+$sudo dnf install SDL2-devel SDL2 SDL2_mixer SDL2_ttf SDL2_image
+
+Second, install the package "https://github.com/veandco/go-sdl2"
+
+Now I need learn to use :p
+
 More information:
  [Wikipedia](https://en.wikipedia.org/wiki/Conway's_Game_of_Life "https://en.wikipedia.org/wiki/Conway's_Game_of_Life")
 

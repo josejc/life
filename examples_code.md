@@ -1,6 +1,6 @@
 # Examples of code
 
-## Multiple goroutines listening on one chanell
+## Multiple goroutines listening on one channel
 
 For sincronization and read the ticks sending the main function
 
