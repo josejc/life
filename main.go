@@ -5,7 +5,9 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -55,6 +57,16 @@ func figure(figure int, x int, y int, w *[M][N][H]int) {
 		w[x+2][y][0] = 1
 		w[x+2][y+1][0] = 1
 		w[x+2][y+2][0] = 1
+	}
+}
+
+// randomw generate a random initial state
+func randomw(w *[M][N][H]int) {
+	// A 25% of cells are alive
+	for i := 0; i < (M * N / 4); i++ {
+		x := rand.Intn(M)
+		y := rand.Intn(N)
+		w[x][y][0] = 1
 	}
 }
 
@@ -232,22 +244,37 @@ func main() {
 	var world [M][N][H]int
 
 	run := true
-	files := os.Args[1:]
-	if len(files) == 0 {
-		// World initialization
-		//figure(0, 6, 2, &world)
-		figure(1, 0, 0, &world)
-		//figure(2, 0, 0, &world)
-	} else {
-		// Only open the first argument, one file
-		arg := files[0]
-		f, err := os.Open(arg)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
+	testPtr := flag.Bool("test", false, "World initialization for test")
+	filePtr := flag.String("file", "name.lif", "File name .lif")
+	flag.Parse()
+	switch {
+	case *randomPtr:
+		{
+			randomw(&world)
+		}
+	case *testPtr:
+		{
+			// World initialization
+			//figure(0, 6, 2, &world)
+			figure(1, 0, 0, &world)
+			//figure(2, 0, 0, &world)
+		}
+	case *filePtr != "name.lif":
+		{
+			f, err := os.Open(*filePtr)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+				run = false
+			} else {
+				run = initw(f, &world)
+				f.Close()
+			}
+		}
+	default:
+		{
+			fmt.Println("Use $life -h for help")
 			run = false
-		} else {
-			run = initw(f, &world)
-			f.Close()
 		}
 	}
 	if run {
