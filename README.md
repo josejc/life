@@ -29,6 +29,23 @@ With this structure we have a spherical world ;) in 2d rectangular array of cell
 
 For evaluation in next time(tick) the world of cells have to [2], for iterate between and grow the simulation.
 
+--
+The constant H is for history of save the different steps in the simulation (now use H=3)
+
+When [0]=[1] the system is static and stop the simulation
+When [0]=[2] the system is oscyllatos with t=2 and stop the simulation
+
+--
+
+Different programs for the same:
+
+* life0: Implementation in Go with in mind C programming
+* life1: Implementation with data structures of Go (Slices of cells and matrix a map of cells)
+* life2: Implmentation a concurrent version with Go routines and channels
+* life3: Implementation with graphics (first study another programs/games for what graphic library use)
+
+--
+
 ## Graphic library? SDL, GL or another basic for create animation
 
 First, install the libraries ;) in the SDL case
