@@ -4,13 +4,13 @@
 package main
 
 import (
-	"bufio"
-	"flag"
+	//"bufio"
+	//"flag"
 	"fmt"
 	"math/rand"
-	"os"
-	"strconv"
-	"strings"
+	//	"os"
+	//	"strconv"
+	//	"strings"
 )
 
 // Constants in CAPITALS
@@ -26,24 +26,32 @@ type Point struct {
 }
 
 type World struct {
-	Cells  [][H]Point
+	Cells  [H][]Point
 	Matrix [H]map[Point]int
 }
 
 // printw print world -> array of [][]cells in time t
 func printw(w World, t int) {
+	m := map[Point]int{} // Map is empty set
 	fmt.Println(w.Cells)
+	m = w.Matrix[t]
+	fmt.Println(m)
 }
 
 // randomw generate a random initial state
 func randomw(w *World) {
 	var p Point
+	m := map[Point]int{}
+	c := make([]Point, 0)
 	// A 25% of cells are alive
 	for i := 0; i < (M * N / 4); i++ {
 		p.x = rand.Intn(M)
 		p.y = rand.Intn(N)
-		w.Matrix[p][0] = 1
+		m[p] = 1
+		c = append(c, p)
 	}
+	w.Cells[0] = c
+	w.Matrix[0] = m
 }
 
 /*---
