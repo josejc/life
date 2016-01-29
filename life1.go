@@ -4,13 +4,13 @@
 package main
 
 import (
-	//"bufio"
-	//"flag"
+	"bufio"
+	"flag"
 	"fmt"
 	"math/rand"
-	//	"os"
-	//	"strconv"
-	//	"strings"
+	"os"
+	"strconv"
+	"strings"
 )
 
 // Constants in CAPITALS
@@ -32,10 +32,25 @@ type World struct {
 
 // printw print world -> array of [][]cells in time t
 func printw(w World, t int) {
+	var p Point
+
 	m := map[Point]int{} // Map is empty set
-	fmt.Println(w.Cells)
+	//fmt.Println(w.Cells)
 	m = w.Matrix[t]
-	fmt.Println(m)
+	//fmt.Println(m)
+	fmt.Println("---")
+	for i := 0; i < M; i++ {
+		for j := 0; j < N; j++ {
+			p.x = i
+			p.y = j
+			if m[p] == 0 {
+				fmt.Print(".")
+			} else {
+				fmt.Print("*")
+			}
+		}
+		fmt.Println()
+	}
 }
 
 // randomw generate a random initial state
@@ -47,16 +62,17 @@ func randomw(w *World) {
 	for i := 0; i < (M * N / 4); i++ {
 		p.x = rand.Intn(M)
 		p.y = rand.Intn(N)
-		m[p] = 1
-		c = append(c, p)
+		if m[p] == 0 {
+			m[p] = 1
+			c = append(c, p)
+		}
 	}
 	w.Cells[0] = c
 	w.Matrix[0] = m
 }
 
-/*---
 // initw read a file .LIF and configure the world with it
-func initw(f *os.File, w *[M][N][H]int) bool {
+func initw(f *os.File, w *World) bool {
 	var r *strings.Reader
 	var b byte
 	var x, y, oldy int
@@ -108,6 +124,9 @@ header:
 			}
 		}
 	}
+	var p Point
+	m := map[Point]int{}
+	c := make([]Point, 0)
 	// Read patterns and positions
 	for input.Scan() {
 		r = strings.NewReader(input.Text())
@@ -126,15 +145,18 @@ header:
 				return false
 			}
 		} else {
+			p.x = x
 			for cells := int(r.Size()); cells > 0; cells-- {
+				p.y = y
 				switch b {
 				case '.':
 					{
-						w[x][y][0] = 0
+						m[p] = 0
 					}
 				case '*':
 					{
-						w[x][y][0] = 1
+						m[p] = 1
+						c = append(c, p)
 					}
 				default:
 					{
@@ -149,10 +171,13 @@ header:
 		x++
 		y = oldy
 	}
+	w.Cells[0] = c
+	w.Matrix[0] = m
 	return true
 	// NOTE: ignoring potential errors from input.Err()
 }
 
+/*---
 // oscilt2 compare Actual (t) = Past (t - 2) for know if the system is oscillator
 func oscilt2(w *[M][N][H]int, t int) bool {
 	oscil := true
@@ -229,34 +254,36 @@ func neighbours(w *[M][N][H]int, i int, j int, t int) int {
 func main() {
 	var world World
 
-	/*
-		run := true
-		randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
-		filePtr := flag.String("file", "name.lif", "File name .lif")
-		flag.Parse()
-		switch {
-		case *randomPtr:
-			{
-				randomw(&world)
-			}
-		case *filePtr != "name.lif":
-			{
-				f, err := os.Open(*filePtr)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
-					run = false
-				} else {
-					run = initw(f, &world)
-					f.Close()
-				}
-			}
-		default:
-			{
-				fmt.Println("Use $life -h for help")
+	run := true
+	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
+	filePtr := flag.String("file", "name.lif", "File name .lif")
+	flag.Parse()
+	switch {
+	case *randomPtr:
+		{
+			randomw(&world)
+		}
+	case *filePtr != "name.lif":
+		{
+			f, err := os.Open(*filePtr)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 				run = false
+			} else {
+				run = initw(f, &world)
+				f.Close()
 			}
 		}
-		if run {
+	default:
+		{
+			fmt.Println("Use $life -h for help")
+			run = false
+		}
+	}
+	if run {
+
+		printw(world, 0)
+		/*
 			for t := 0; t < T_SIMUL; t++ {
 				fmt.Println("Time:", t)
 				printw(world, t%H)
@@ -270,10 +297,6 @@ func main() {
 					t = T_SIMUL
 				}
 			}
-		}
-	*/
-
-	randomw(&world)
-	printw(world, 0)
-
+		*/
+	}
 }
