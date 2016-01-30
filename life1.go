@@ -151,7 +151,7 @@ header:
 				switch b {
 				case '.':
 					{
-						m[p] = 0
+						//						m[p] = 0
 					}
 				case '*':
 					{
@@ -197,26 +197,37 @@ loop:
 	}
 	return oscil
 }
+///*/
 
 // nextw compute for all the world the next state of the cells
-func nextw(w *[M][N][H]int, t int) bool {
-
+func nextw(w *World, t int) bool {
 	static := true
 	at := t % H       // Actual time
 	nt := (t + 1) % H // Next time
+	//c_at := w.Cells[at]
+	m_at := w.Matrix[at]
+	m_nt := map[Point]int{}
+	c_nt := make([]Point, 0)
 	for i := 0; i < M; i++ {
 		for j := 0; j < N; j++ {
-			w[i][j][nt] = neighbours(w, i, j, at)
-			if static && (w[i][j][nt] != w[i][j][at]) {
+			p := Point{i, j}
+			nxt := neighbours(m_at, i, j)
+			if nxt == 1 {
+				m_nt[p] = 1
+				c_nt = append(c_nt, p)
+			}
+			if static && (nxt != m_at[p]) {
 				static = false
 			}
 		}
 	}
+	w.Cells[nt] = c_nt
+	w.Matrix[nt] = m_nt
 	return static
 }
 
 // neighbours calculate the next state of the cells
-func neighbours(w *[M][N][H]int, i int, j int, t int) int {
+func neighbours(m map[Point]int, i int, j int) int {
 	var nb int // number of neifhbours life
 
 	top := i - 1
@@ -235,12 +246,10 @@ func neighbours(w *[M][N][H]int, i int, j int, t int) int {
 	if right == N {
 		right = 0
 	}
-	nb = w[top][left][t] + w[top][j][t] + w[top][right][t]
-	nb += w[i][left][t] + w[i][right][t]
-	nb += w[bottom][left][t] + w[bottom][j][t] + w[bottom][right][t]
-	//fmt.Println(top, bottom, left, right)
-	//fmt.Println(i, j, t, "nb:", nb, "w:", w[i][j][t])
-	if (nb == 2) && (w[i][j][t] == 1) {
+	nb = m[Point{top, left}] + m[Point{top, j}] + m[Point{top, right}]
+	nb += m[Point{i, left}] + m[Point{i, right}]
+	nb += m[Point{bottom, left}] + m[Point{bottom, j}] + m[Point{bottom, right}]
+	if (nb == 2) && (m[Point{i, j}] == 1) {
 		return 1
 	}
 	if nb == 3 {
@@ -248,7 +257,6 @@ func neighbours(w *[M][N][H]int, i int, j int, t int) int {
 	}
 	return 0
 }
----*/
 
 // main function for run and test the implementation of the functions
 func main() {
@@ -281,22 +289,20 @@ func main() {
 		}
 	}
 	if run {
-
-		printw(world, 0)
-		/*
-			for t := 0; t < T_SIMUL; t++ {
-				fmt.Println("Time:", t)
-				printw(world, t%H)
-				// Check the world before calculate the next
+		for t := 0; t < T_SIMUL; t++ {
+			fmt.Println("Time:", t)
+			printw(world, t%H)
+			// Check the world before calculate the next
+			/*
 				if oscilt2(&world, t) {
 					fmt.Println("End simulation, the system is oscillator with period=2")
 					t = T_SIMUL
 				}
-				if nextw(&world, t) {
-					fmt.Println("End simulation, the system is static.")
-					t = T_SIMUL
-				}
+			*/
+			if nextw(&world, t) {
+				fmt.Println("End simulation, the system is static.")
+				t = T_SIMUL
 			}
-		*/
+		}
 	}
 }
