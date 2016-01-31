@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -26,24 +27,17 @@ type Point struct {
 }
 
 type World struct {
-	Cells  [H][]Point
 	Matrix [H]map[Point]int
 }
 
 // printw print world -> array of [][]cells in time t
 func printw(w World, t int) {
-	var p Point
-
 	m := map[Point]int{} // Map is empty set
-	//fmt.Println(w.Cells)
 	m = w.Matrix[t]
-	//fmt.Println(m)
 	fmt.Println("---")
 	for i := 0; i < M; i++ {
 		for j := 0; j < N; j++ {
-			p.x = i
-			p.y = j
-			if m[p] == 0 {
+			if m[Point{i, j}] == 0 {
 				fmt.Print(".")
 			} else {
 				fmt.Print("*")
@@ -57,17 +51,14 @@ func printw(w World, t int) {
 func randomw(w *World) {
 	var p Point
 	m := map[Point]int{}
-	c := make([]Point, 0)
 	// A 25% of cells are alive
 	for i := 0; i < (M * N / 4); i++ {
 		p.x = rand.Intn(M)
 		p.y = rand.Intn(N)
 		if m[p] == 0 {
 			m[p] = 1
-			c = append(c, p)
 		}
 	}
-	w.Cells[0] = c
 	w.Matrix[0] = m
 }
 
@@ -126,7 +117,6 @@ header:
 	}
 	var p Point
 	m := map[Point]int{}
-	c := make([]Point, 0)
 	// Read patterns and positions
 	for input.Scan() {
 		r = strings.NewReader(input.Text())
@@ -151,12 +141,11 @@ header:
 				switch b {
 				case '.':
 					{
-						//						m[p] = 0
+						//m[p] = 0
 					}
 				case '*':
 					{
 						m[p] = 1
-						c = append(c, p)
 					}
 				default:
 					{
@@ -171,57 +160,46 @@ header:
 		x++
 		y = oldy
 	}
-	w.Cells[0] = c
 	w.Matrix[0] = m
 	return true
 	// NOTE: ignoring potential errors from input.Err()
 }
 
-/*---
 // oscilt2 compare Actual (t) = Past (t - 2) for know if the system is oscillator
-func oscilt2(w *[M][N][H]int, t int) bool {
+func oscilt2(w *World, t int) bool {
 	oscil := true
 	if t < 2 {
 		return false
 	}
 	at := t % H       // Actual time
 	pt := (t - 2) % H // Past time
-loop:
-	for i := 0; i < M; i++ {
-		for j := 0; j < N; j++ {
-			if w[i][j][at] != w[i][j][pt] {
-				oscil = false
-				break loop
-			}
-		}
+	m_at := w.Matrix[at]
+	m_pt := w.Matrix[pt]
+	if !reflect.DeepEqual(m_at, m_pt) {
+		oscil = false
 	}
 	return oscil
 }
-///*/
 
 // nextw compute for all the world the next state of the cells
 func nextw(w *World, t int) bool {
 	static := true
 	at := t % H       // Actual time
 	nt := (t + 1) % H // Next time
-	//c_at := w.Cells[at]
 	m_at := w.Matrix[at]
 	m_nt := map[Point]int{}
-	c_nt := make([]Point, 0)
 	for i := 0; i < M; i++ {
 		for j := 0; j < N; j++ {
 			p := Point{i, j}
 			nxt := neighbours(m_at, i, j)
 			if nxt == 1 {
 				m_nt[p] = 1
-				c_nt = append(c_nt, p)
 			}
 			if static && (nxt != m_at[p]) {
 				static = false
 			}
 		}
 	}
-	w.Cells[nt] = c_nt
 	w.Matrix[nt] = m_nt
 	return static
 }
@@ -293,12 +271,10 @@ func main() {
 			fmt.Println("Time:", t)
 			printw(world, t%H)
 			// Check the world before calculate the next
-			/*
-				if oscilt2(&world, t) {
-					fmt.Println("End simulation, the system is oscillator with period=2")
-					t = T_SIMUL
-				}
-			*/
+			if oscilt2(&world, t) {
+				fmt.Println("End simulation, the system is oscillator with period=2")
+				t = T_SIMUL
+			}
 			if nextw(&world, t) {
 				fmt.Println("End simulation, the system is static.")
 				t = T_SIMUL
