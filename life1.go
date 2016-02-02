@@ -183,20 +183,116 @@ func oscilt2(w *World, t int) bool {
 
 // nextw compute for all the world the next state of the cells
 func nextw(w *World, t int) bool {
+	var paux Point
+
 	static := true
 	at := t % H       // Actual time
 	nt := (t + 1) % H // Next time
 	m_at := w.Matrix[at]
 	m_nt := map[Point]int{}
-	for i := 0; i < M; i++ {
-		for j := 0; j < N; j++ {
-			p := Point{i, j}
-			nxt := neighbours(m_at, i, j)
-			if nxt == 1 {
-				m_nt[p] = 1
+	m_p := map[Point]int{} // Map points visited, not necessary calculate next state
+	for p, v := range m_at {
+		if v == 1 { // Only calculate next state the cells alife and her neighbours
+			top, bottom, left, right := pneighbours(p.x, p.y)
+			// TODO A func with this test :p
+			paux = Point{top, left}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
 			}
-			if static && (nxt != m_at[p]) {
-				static = false
+			paux = Point{top, p.y}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
+			}
+			paux = Point{top, right}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
+			}
+			paux = Point{p.x, left}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
+			}
+			paux = p
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
+			}
+			paux = Point{p.x, right}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
+			}
+			paux = Point{bottom, left}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
+			}
+			paux = Point{bottom, p.y}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
+			}
+			paux = Point{bottom, right}
+			if m_p[paux] == 0 {
+				m_p[paux] = 1
+				nxt := neighbours(m_at, paux.x, paux.y)
+				if nxt == 1 {
+					m_nt[paux] = 1
+				}
+				if static && (nxt != m_at[paux]) {
+					static = false
+				}
 			}
 		}
 	}
@@ -204,10 +300,8 @@ func nextw(w *World, t int) bool {
 	return static
 }
 
-// neighbours calculate the next state of the cells
-func neighbours(m map[Point]int, i int, j int) int {
-	var nb int // number of neifhbours life
-
+// pneighbours return the positions of the neighbours of (i,j)
+func pneighbours(i int, j int) (int, int, int, int) {
 	top := i - 1
 	bottom := i + 1
 	left := j - 1
@@ -224,6 +318,14 @@ func neighbours(m map[Point]int, i int, j int) int {
 	if right == N {
 		right = 0
 	}
+	return top, bottom, left, right
+}
+
+// neighbours calculate the next state of the cells
+func neighbours(m map[Point]int, i int, j int) int {
+	var nb int // number of neifhbours life
+
+	top, bottom, left, right := pneighbours(i, j)
 	nb = m[Point{top, left}] + m[Point{top, j}] + m[Point{top, right}]
 	nb += m[Point{i, left}] + m[Point{i, right}]
 	nb += m[Point{bottom, left}] + m[Point{bottom, j}] + m[Point{bottom, right}]
