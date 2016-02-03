@@ -194,109 +194,43 @@ func nextw(w *World, t int) bool {
 	for p, v := range m_at {
 		if v == 1 { // Only calculate next state the cells alife and her neighbours
 			top, bottom, left, right := pneighbours(p.x, p.y)
-			// TODO A func with this test :p
 			paux = Point{top, left}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = Point{top, p.y}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = Point{top, right}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = Point{p.x, left}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = p
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = Point{p.x, right}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = Point{bottom, left}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = Point{bottom, p.y}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 			paux = Point{bottom, right}
-			if m_p[paux] == 0 {
-				m_p[paux] = 1
-				nxt := neighbours(m_at, paux.x, paux.y)
-				if nxt == 1 {
-					m_nt[paux] = 1
-				}
-				if static && (nxt != m_at[paux]) {
-					static = false
-				}
-			}
+			static = nextstate(static, paux, m_at, m_nt, m_p)
 		}
 	}
 	w.Matrix[nt] = m_nt
+	return static
+}
+
+// nextstate calculate the next state and return if the systems is static
+// The maps are reference types ;) don´t necessary a pointer ;)
+func nextstate(static bool, p Point, m_at map[Point]int, m_nt map[Point]int, m_p map[Point]int) bool {
+	if m_p[p] == 0 {
+		m_p[p] = 1
+		nxt := neighbours(m_at, p.x, p.y)
+		if nxt == 1 {
+			m_nt[p] = 1
+		}
+		if static && (nxt != m_at[p]) {
+			static = false
+		}
+	}
 	return static
 }
 
