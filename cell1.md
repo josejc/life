@@ -3,6 +3,7 @@
 The main function control the data of the world's state
 
 ##data
+
 world map[point]int         // points of the cells are alife
 visit map[point]int       // points for check the neighbours (the life cells and her neighbours)
 c[M*N] channels of point      // a channel for every go routine N for send the point to calculate next state
@@ -42,6 +43,7 @@ go routine nextstate
     endif
     // if not life need a point X,X for don't block the main
 endnextstate
+```
 
 PROBLEMS
 
