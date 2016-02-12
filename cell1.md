@@ -4,10 +4,10 @@ The main function control the data of the world's state
 
 ##data
 
-world map[point]int         // points of the cells are alife
-visit map[point]int       // points for check the neighbours (the life cells and her neighbours)
-c[M*N] channels of point      // a channel for every go routine N for send the point to calculate next state
-life[M*N] channels of map       // return the map of points with the cell life in the next state
+* world map[point]int       ;points of the cells are alife
+* visit map[point]int       ;points for check the neighbours (the life cells and her neighbours)
+* c[M*N] channels of point  ;a channel for every go routine N for send the point to calculate next state
+* life[M*N] channels of map ;return the map of points with the cell life in the next state
 
 
 ##pseudocode
@@ -47,11 +47,9 @@ endnextstate
 
 PROBLEMS
 
-    -All the goroutines read the structure data world
-    -If wait for a point life and the point is dead need a point X,X for this case
-    -With this structure... improve the deterministic solution? I think NO,
+    * All the goroutines read the structure data world
+    * If wait for a point life and the point is dead need a point X,X for this case
+    * With this structure... improve the deterministic solution? I think NO,
         the go routines working concurrently but main is send all the points and recollect
         the solution in deterministic :p
 
-
-```

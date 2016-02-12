@@ -4,11 +4,11 @@ The main function control the data of the world's state
 
 ##data
 
-x-subdivision horizontal, y-subdivision vertical
-world map[point]int         // points of the cells are alife
-visit map[point]int         // point for calculate the next state (cells life and her neighbours)
-c[x*y] channels of point      // a channel for every go routine for send the point to calculate next state
-sol[x*y] channels of map      // the solution of the zone (map[point]int)
+The world is divided in (x-subdivision horizontal, y-subdivision vertical)
+    * world map[point]int       ;points of the cells are alife
+    * visit map[point]int       ;point for calculate the next state (cells life and her neighbours)
+    * c[x*y] channels of point  ;a channel for every go routine for send the point to calculate next state
+    * sol[x*y] channels of map  ;the solution of the zone (map[point]int)
 
 ##pseudocode
 ```
@@ -77,13 +77,13 @@ function zoneworld(point) zone
     return (vzone*x+hzone)
 ```
 
-PROBLEMS
+##Problems
 
-    -All the goroutines read the structure data world
+    * All the goroutines read the structure data world
         No problem, because only read, the main function control with channels when goroutines running
-    -With this solution if all the cells are in one zone don't improve the time of execution, the best improve is 
-    when the cells are uniform distribution in the world
+    * With this solution if all the cells are in one zone don't improve the time of execution, the best improve is 
+        when the cells are uniform distribution in the world
         Nothing to do
-    -How match the borderlines in the different zones of the world
+    * How match the borderlines in the different zones of the world
         No problem, the main function divide the world in zones but the goroutines read all the world, no borderlines
 
