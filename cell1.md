@@ -2,7 +2,7 @@
 
 The main function control the data of the world's state
 
-##data
+##Data
 
 * world map[point]int       ;points of the cells are alife
 * visit map[point]int       ;points for check the neighbours (the life cells and her neighbours)
@@ -10,7 +10,7 @@ The main function control the data of the world's state
 * life[M*N] channels of map ;return the map of points with the cell life in the next state
 
 
-##pseudocode
+##Pseudocode
 ```
 main 
     initializations
@@ -45,7 +45,7 @@ go routine nextstate
 endnextstate
 ```
 
-PROBLEMS
+##Problems
 
     * All the goroutines read the structure data world
     * If wait for a point life and the point is dead need a point X,X for this case

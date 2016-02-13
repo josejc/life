@@ -2,7 +2,7 @@
 
 The main function control the data of the world's state
 
-##data
+##Data
 
 The world is divided in (x-subdivision horizontal, y-subdivision vertical)
     * world map[point]int       ;points of the cells are alife
@@ -10,7 +10,7 @@ The world is divided in (x-subdivision horizontal, y-subdivision vertical)
     * c[x*y] channels of point  ;a channel for every go routine for send the point to calculate next state
     * sol[x*y] channels of map  ;the solution of the zone (map[point]int)
 
-##pseudocode
+##Pseudocode
 ```
 main 
     initializations
