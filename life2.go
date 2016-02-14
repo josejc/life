@@ -217,6 +217,29 @@ func nextw(w *World, t int) bool {
 		}
 	}
 	for p, _ := range m_v {
+		// Now calculate the zone in the world were is p
+		hzone := 0
+		vzone := 0
+		d := M / zx
+	hloop:
+		for i := 0; i < zx; i++ {
+			// if p is inside [id, (i+1)d -1]
+			if (p.x >= (i * d)) && (p.x < (i+1)*d) {
+				hzone = i
+				break hloop
+			}
+		}
+		d = N / zy
+	vloop:
+		for i := 0; i < zy; i++ {
+			// if p is inside [id, (i+1)d -1]
+			if (p.y >= (i * d)) && (p.y < (i+1)*d) {
+				vzone = i
+				break vloop
+			}
+		}
+		zone := vzone*zx + hzone
+		fmt.Println("Point", p, "Zone h:", hzone, "Zone v:", vzone, "Zone 2d:", zone)
 		static = nextstate(static, p, m_at, m_nt)
 	}
 	w.Matrix[nt] = m_nt
