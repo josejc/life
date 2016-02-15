@@ -240,6 +240,7 @@ func nextw(w *World, t int) bool {
 		}
 		zone := vzone*zx + hzone
 		fmt.Println("Point", p, "Zone h:", hzone, "Zone v:", vzone, "Zone 2d:", zone)
+		//TODO: Goroutines and send the point to the gorotuine calculate the next state in this zone
 		static = nextstate(static, p, m_at, m_nt)
 	}
 	w.Matrix[nt] = m_nt
