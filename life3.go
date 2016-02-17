@@ -207,6 +207,7 @@ func nextw(w *World, t int) bool {
 	nt := (t + 1) % H // Next time
 	m_at := w.Matrix[at]
 	m_nt := map[Point]int{}
+	m_s := map[Point]int{} // Partial solution offer by goroutine
 	m_v := map[Point]int{} // Map points for calculate the next state
 	for p, v := range m_at {
 		if v == 1 { // Only add the points for visit the cells alife and her neighbours
@@ -231,9 +232,19 @@ func nextw(w *World, t int) bool {
 			m_v[paux] = 1
 		}
 	}
+	i := 0
 	for p, _ := range m_v {
 		//TODO: Goroutines and send the point to the gorotuine calculate the next state in this zone
-		static = nextstate(static, p, m_at, m_nt)
+		punts[i] <- p
+		i = (i + 1) % X
+		//static = nextstate(static, p, m_at, m_nt)
+	}
+	for i = 0; i < X; i++ {
+		punts[i] <- Point{M, N}
+		m_s <- sols[i]
+		for k, v := range m_s {
+			m_nt[k] = v
+		}
 	}
 	w.Matrix[nt] = m_nt
 	return static
