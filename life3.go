@@ -34,11 +34,13 @@ type World struct {
 }
 
 var w World
+var punts [X]chan Point
+var sols [X]chan map[Point]int
 
 // printw print world -> array of [][]cells in time t
 func printw() {
 	m := map[Point]int{} // Map is empty set
-	m = w.Matrix[T]
+	m = w.Matrix[w.T]
 	fmt.Println("---")
 	for i := 0; i < M; i++ {
 		for j := 0; j < N; j++ {
@@ -194,8 +196,9 @@ func nextConcurrently() (chan<- Point, <-chan map[Point]int) {
 		p_end := Point{M, N}
 		for {
 			p_sol := map[Point]int{} // Map points alife
+			m_at := w.Matrix[w.T]
 			for p <- p_calc; p != p_end; p <- p_calc {
-				nxt := neighbours(w.Matrix[w.T], p.x, p.y)
+				nxt := neighbours(m_at, p.x, p.y)
 				if nxt == 1 {
 					sol[p] = 1
 				}
@@ -327,8 +330,6 @@ func main() {
 		}
 	}
 	if run {
-		var punts [X]chan Point
-		var sols [X]chan map[Point]int
 		for i := 0; i < X; i++ {
 			punts[i], sols[i] = nextConcurrently()
 		}
@@ -341,7 +342,8 @@ func main() {
 				fmt.Println("End simulation, the system is oscillator with period=2")
 				t = T_SIMUL
 			}
-			if nextw() {
+			nextw()
+			if w.static {
 				fmt.Println("End simulation, the system is static.")
 				t = T_SIMUL
 			}
