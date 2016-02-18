@@ -29,12 +29,16 @@ type Point struct {
 
 type World struct {
 	Matrix [H]map[Point]int
+	static bool // World is static?
+	T      int  // Actual time
 }
 
+var w World
+
 // printw print world -> array of [][]cells in time t
-func printw(w World, t int) {
+func printw() {
 	m := map[Point]int{} // Map is empty set
-	m = w.Matrix[t]
+	m = w.Matrix[T]
 	fmt.Println("---")
 	for i := 0; i < M; i++ {
 		for j := 0; j < N; j++ {
@@ -49,7 +53,7 @@ func printw(w World, t int) {
 }
 
 // randomw generate a random initial state
-func randomw(w *World) {
+func randomw() {
 	var p Point
 	m := map[Point]int{}
 	// A 25% of cells are alive
@@ -64,7 +68,7 @@ func randomw(w *World) {
 }
 
 // initw read a file .LIF and configure the world with it
-func initw(f *os.File, w *World) bool {
+func initw(f *os.File) bool {
 	var r *strings.Reader
 	var b byte
 	var x, y, oldy int
@@ -167,14 +171,13 @@ header:
 }
 
 // oscilt2 compare Actual (t) = Past (t - 2) for know if the system is oscillator
-func oscilt2(w *World, t int) bool {
+func oscilt2(t int) bool {
 	oscil := true
 	if t < 2 {
 		return false
 	}
-	at := t % H       // Actual time
 	pt := (t - 2) % H // Past time
-	m_at := w.Matrix[at]
+	m_at := w.Matrix[w.T]
 	m_pt := w.Matrix[pt]
 	if !reflect.DeepEqual(m_at, m_pt) {
 		oscil = false
@@ -188,23 +191,31 @@ func nextConcurrently() (chan<- Point, <-chan map[Point]int) {
 	sol := make(chan map[Point]int) // Can only write to
 	go func() {                     // We launch the goroutine from inside the function.
 		var p Point
+		p_end := Point{M, N}
 		for {
 			p_sol := map[Point]int{} // Map points alife
-			//	for p <-p_calc; p != Point{M,N}; p <-p_calc {
-			//	}
-			//		sol -> p_sol
+			for p <- p_calc; p != p_end; p <- p_calc {
+				nxt := neighbours(w.Matrix[w.T], p.x, p.y)
+				if nxt == 1 {
+					sol[p] = 1
+				}
+				if w.static && (nxt != m_at[p]) {
+					w.static = false
+				}
+			}
+			sol <- p_sol
 		}
 	}()
 	return p_calc, sol
 }
 
 // nextw compute for all the world the next state of the cells
-func nextw(w *World, t int) bool {
+func nextw() {
 	var paux Point
 
-	static := true
-	at := t % H       // Actual time
-	nt := (t + 1) % H // Next time
+	w.static = true
+	at := w.T          // Actual time
+	nt := (at + 1) % H // Next time
 	m_at := w.Matrix[at]
 	m_nt := map[Point]int{}
 	m_s := map[Point]int{} // Partial solution offer by goroutine
@@ -234,10 +245,8 @@ func nextw(w *World, t int) bool {
 	}
 	i := 0
 	for p, _ := range m_v {
-		//TODO: Goroutines and send the point to the gorotuine calculate the next state in this zone
 		punts[i] <- p
 		i = (i + 1) % X
-		//static = nextstate(static, p, m_at, m_nt)
 	}
 	for i = 0; i < X; i++ {
 		punts[i] <- Point{M, N}
@@ -247,20 +256,6 @@ func nextw(w *World, t int) bool {
 		}
 	}
 	w.Matrix[nt] = m_nt
-	return static
-}
-
-// nextstate calculate the next state and return if the systems is static
-// The maps are reference types ;) don´t necessary a pointer ;)
-func nextstate(static bool, p Point, m_at map[Point]int, m_nt map[Point]int) bool {
-	nxt := neighbours(m_at, p.x, p.y)
-	if nxt == 1 {
-		m_nt[p] = 1
-	}
-	if static && (nxt != m_at[p]) {
-		static = false
-	}
-	return static
 }
 
 // pneighbours return the positions of the neighbours of (i,j)
@@ -303,8 +298,8 @@ func neighbours(m map[Point]int, i int, j int) int {
 
 // main function for run and test the implementation of the functions
 func main() {
-	var world World
-
+	w.T = 0
+	w.static = false
 	run := true
 	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
 	filePtr := flag.String("file", "name.lif", "File name .lif")
@@ -312,7 +307,7 @@ func main() {
 	switch {
 	case *randomPtr:
 		{
-			randomw(&world)
+			randomw()
 		}
 	case *filePtr != "name.lif":
 		{
@@ -321,7 +316,7 @@ func main() {
 				fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 				run = false
 			} else {
-				run = initw(f, &world)
+				run = initw(f)
 				f.Close()
 			}
 		}
@@ -339,13 +334,14 @@ func main() {
 		}
 		for t := 0; t < T_SIMUL; t++ {
 			fmt.Println("Time:", t)
-			printw(world, t%H)
+			w.T = t % H
+			printw()
 			// Check the world before calculate the next
-			if oscilt2(&world, t) {
+			if oscilt2(t) {
 				fmt.Println("End simulation, the system is oscillator with period=2")
 				t = T_SIMUL
 			}
-			if nextw(&world, t) {
+			if nextw() {
 				fmt.Println("End simulation, the system is static.")
 				t = T_SIMUL
 			}
