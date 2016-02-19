@@ -34,8 +34,8 @@ type World struct {
 }
 
 var w World
-var punts [X]chan Point
-var sols [X]chan map[Point]int
+var punts [X]chan<- Point
+var sols [X]<-chan map[Point]int
 
 // printw print world -> array of [][]cells in time t
 func printw() {
@@ -189,27 +189,27 @@ func oscilt2(t int) bool {
 
 //
 func nextConcurrently() (chan<- Point, <-chan map[Point]int) {
-	p_calc := make(chan Point)      // Can only read from
-	sol := make(chan map[Point]int) // Can only write to
+	c_punts := make(chan Point)      // Can only read from
+	c_sol := make(chan map[Point]int) // Can only write to
 	go func() {                     // We launch the goroutine from inside the function.
 		var p Point
 		p_end := Point{M, N}
 		for {
 			p_sol := map[Point]int{} // Map points alife
 			m_at := w.Matrix[w.T]
-			for p <- p_calc; p != p_end; p <- p_calc {
+			for p = <-c_punts; p != p_end; p = <-c_punts {
 				nxt := neighbours(m_at, p.x, p.y)
 				if nxt == 1 {
-					sol[p] = 1
+					p_sol[p] = 1
 				}
 				if w.static && (nxt != m_at[p]) {
 					w.static = false
 				}
 			}
-			sol <- p_sol
+			c_sol <- p_sol
 		}
 	}()
-	return p_calc, sol
+	return c_punts, c_sol
 }
 
 // nextw compute for all the world the next state of the cells
@@ -253,7 +253,7 @@ func nextw() {
 	}
 	for i = 0; i < X; i++ {
 		punts[i] <- Point{M, N}
-		m_s <- sols[i]
+		m_s = <-sols[i]
 		for k, v := range m_s {
 			m_nt[k] = v
 		}
