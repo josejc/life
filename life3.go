@@ -195,6 +195,9 @@ func nextConcurrently() (chan<- Point, <-chan map[Point]int) {
 		var p Point
 		p_end := Point{M, N}
 		for {
+			for p = <-c_punts; p != p_end; p = <-c_punts {
+				// wait to change the actual time ;)
+			}
 			p_sol := map[Point]int{} // Map points alife
 			m_at := w.Matrix[w.T]
 			for p = <-c_punts; p != p_end; p = <-c_punts {
@@ -247,9 +250,17 @@ func nextw() {
 		}
 	}
 	i := 0
+	count := 0
 	for p, _ := range m_v {
+		if count < X {
+			punts[i] <- Point{M, N}
+		}
 		punts[i] <- p
 		i = (i + 1) % X
+		count++
+	}
+	for i=count; i<X; i++ {
+		punts[i] <- Point{M, N}
 	}
 	for i = 0; i < X; i++ {
 		punts[i] <- Point{M, N}
@@ -301,8 +312,6 @@ func neighbours(m map[Point]int, i int, j int) int {
 
 // main function for run and test the implementation of the functions
 func main() {
-	w.T = 0
-	w.static = false
 	run := true
 	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
 	filePtr := flag.String("file", "name.lif", "File name .lif")
@@ -342,6 +351,7 @@ func main() {
 				fmt.Println("End simulation, the system is oscillator with period=2")
 				t = T_SIMUL
 			}
+
 			nextw()
 			if w.static {
 				fmt.Println("End simulation, the system is static.")
