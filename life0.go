@@ -7,16 +7,18 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Constants in CAPITALS
 const (
-	M       = 101 // Rows
-	N       = 101 // Columns
+	M       = 100 // Rows
+	N       = 100 // Columns
 	H       = 3   // History
 	T_SIMUL = 100
 )
@@ -243,6 +245,7 @@ func neighbours(w *[M][N][H]int, i int, j int, t int) int {
 func main() {
 	var world [M][N][H]int
 
+	start := time.Now()
 	run := true
 	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
 	testPtr := flag.Bool("test", false, "World initialization for test")
@@ -292,4 +295,6 @@ func main() {
 			}
 		}
 	}
+	elapsed := time.Since(start)
+	log.Printf("Total time: %s", elapsed)
 }

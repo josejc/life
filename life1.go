@@ -7,17 +7,19 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Constants in CAPITALS
 const (
-	M       = 101 // Rows
-	N       = 101 // Columns
+	M       = 100 // Rows
+	N       = 100 // Columns
 	H       = 3   // History
 	T_SIMUL = 100
 )
@@ -276,6 +278,7 @@ func neighbours(m map[Point]int, i int, j int) int {
 func main() {
 	var world World
 
+	start := time.Now()
 	run := true
 	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
 	filePtr := flag.String("file", "name.lif", "File name .lif")
@@ -317,4 +320,6 @@ func main() {
 			}
 		}
 	}
+	elapsed := time.Since(start)
+	log.Printf("Total time: %s", elapsed)
 }

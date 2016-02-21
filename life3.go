@@ -7,17 +7,19 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Constants in CAPITALS
 const (
-	M       = 99  // Rows
-	N       = 99  // Columns
+	M       = 100 // Rows
+	N       = 100 // Columns
 	H       = 3   // History
 	T_SIMUL = 100 // Max. time of simulation (end if static condition or socillation)
 	X       = 20  // Number of goroutines to create, and wait for calculate the next state of points
@@ -189,9 +191,9 @@ func oscilt2(t int) bool {
 
 //
 func nextConcurrently() (chan<- Point, <-chan map[Point]int) {
-	c_punts := make(chan Point)      // Can only read from
+	c_punts := make(chan Point)       // Can only read from
 	c_sol := make(chan map[Point]int) // Can only write to
-	go func() {                     // We launch the goroutine from inside the function.
+	go func() {                       // We launch the goroutine from inside the function.
 		var p Point
 		p_end := Point{M, N}
 		for {
@@ -259,7 +261,7 @@ func nextw() {
 		i = (i + 1) % X
 		count++
 	}
-	for i=count; i<X; i++ {
+	for i = count; i < X; i++ {
 		punts[i] <- Point{M, N}
 	}
 	for i = 0; i < X; i++ {
@@ -312,6 +314,7 @@ func neighbours(m map[Point]int, i int, j int) int {
 
 // main function for run and test the implementation of the functions
 func main() {
+	start := time.Now()
 	run := true
 	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
 	filePtr := flag.String("file", "name.lif", "File name .lif")
@@ -351,7 +354,6 @@ func main() {
 				fmt.Println("End simulation, the system is oscillator with period=2")
 				t = T_SIMUL
 			}
-
 			nextw()
 			if w.static {
 				fmt.Println("End simulation, the system is static.")
@@ -359,4 +361,6 @@ func main() {
 			}
 		}
 	}
+	elapsed := time.Since(start)
+	log.Printf("Total time: %s", elapsed)
 }
