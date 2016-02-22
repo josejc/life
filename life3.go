@@ -33,6 +33,7 @@ type World struct {
 	Matrix [H]map[Point]int
 	static bool // World is static?
 	T      int  // Actual time
+	X      int  // Number of Goroutines
 }
 
 var w World
@@ -254,17 +255,17 @@ func nextw() {
 	i := 0
 	count := 0
 	for p, _ := range m_v {
-		if count < X {
+		if count < w.X {
 			punts[i] <- Point{M, N}
 		}
 		punts[i] <- p
-		i = (i + 1) % X
+		i = (i + 1) % w.X
 		count++
 	}
-	for i = count; i < X; i++ {
+	for i = count; i < w.X; i++ {
 		punts[i] <- Point{M, N}
 	}
-	for i = 0; i < X; i++ {
+	for i = 0; i < w.X; i++ {
 		punts[i] <- Point{M, N}
 		m_s = <-sols[i]
 		for k, v := range m_s {
@@ -316,8 +317,10 @@ func neighbours(m map[Point]int, i int, j int) int {
 func main() {
 	start := time.Now()
 	run := true
+	w.X = X
 	randomPtr := flag.Bool("random", false, "Initialize the world with a random state")
 	filePtr := flag.String("file", "name.lif", "File name .lif")
+	nGRPtr := flag.Int("x", X, "Number of goroutines for calculate next world")
 	flag.Parse()
 	switch {
 	case *randomPtr:
@@ -341,8 +344,17 @@ func main() {
 			run = false
 		}
 	}
+	if *nGRPtr > X {
+		fmt.Fprintf(os.Stderr, "ERROR: The higher number of GoRoutines is %v\n", X)
+		run = false
+	} else if *nGRPtr < 1 {
+		fmt.Fprintf(os.Stderr, "Error: The minimal number of GoRoutines is 1\n")
+		run = false
+	}
 	if run {
-		for i := 0; i < X; i++ {
+		w.X = *nGRPtr
+		fmt.Println("---X", w.X)
+		for i := 0; i < w.X; i++ {
 			punts[i], sols[i] = nextConcurrently()
 		}
 		for t := 0; t < T_SIMUL; t++ {
